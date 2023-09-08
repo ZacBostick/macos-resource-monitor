@@ -3,6 +3,12 @@ import tkinter as tk
 from tkinter import ttk
 import datetime
 
+def get_detailed_cpu_usage():
+    """Returns a string containing the CPU usage percentage for each core."""
+    per_core_usage = psutil.cpu_percent(interval=1, percpu=True)
+    usage_strings = [f"Core {i+1}: {usage}%" for i, usage in enumerate(per_core_usage)]
+    return ", ".join(usage_strings)
+
 def get_cpu_usage():
     return psutil.cpu_percent(interval=1)
 
@@ -46,7 +52,7 @@ def get_temperature_info():
         pass
 
     return "No Temp Info Available"
-def update_stats():
+def update_stats_with_alerts():
     cpu_usage = get_cpu_usage()
     ram_usage = get_ram_usage()
     storage_usage = get_storage_usage()
@@ -55,19 +61,37 @@ def update_stats():
     ram_label.config(text=f"RAM Usage: {ram_usage}%")
     storage_label.config(text=f"Storage Usage: {storage_usage}%")
     
-    root.after(5000, update_stats)  
     uptime_label.config(text=f"Uptime: {get_uptime()}")
     network_label.config(text=f"Network: {get_network_info()}")
     battery_label.config(text=f"Battery: {get_battery_info()}")
     temperature_label.config(text=f"Temperature: {get_temperature_info()}")
     
-    root.after(5000, update_stats)
+    root.after(5000, update_stats_with_alerts)
 root = tk.Tk()
 root.title("Resource Monitor")
-root.geometry("250x150")
-root.wm_attributes('-topmost', 1) 
+
+style = ttk.Style()
+style.configure("TLabel", font=("Arial", 12))
+
+root.geometry("350x200")
+root.resizable(True, True)  
 frame = ttk.Frame(root, padding="10")
 frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+for i in range(7):
+    frame.grid_rowconfigure(i, weight=1)
+frame.grid_columnconfigure(0, weight=1)
+
+root.wm_attributes('-topmost', 1) 
+
+frame = ttk.Frame(root, padding="10")
+frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+
+for i in range(7):
+    frame.grid_rowconfigure(i, weight=1)
+frame.grid_columnconfigure(0, weight=1)
+
 
 cpu_label = ttk.Label(frame)
 cpu_label.grid(row=0, column=0, sticky=tk.W, pady=5)
@@ -90,12 +114,9 @@ battery_label.grid(row=5, column=0, sticky=tk.W, pady=5)
 temperature_label = ttk.Label(frame)
 temperature_label.grid(row=6, column=0, sticky=tk.W, pady=5)
 
-update_stats()
+update_stats_with_alerts()
 
 root.mainloop()
-
-
-
 
 
 
